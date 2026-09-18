@@ -1,0 +1,10 @@
+# EmoSense Database Configuration Example
+# Copy this file to database.properties and configure your local MySQL credentials.
+# Do NOT commit database.properties with actual passwords to version control.
+
+emosense.db.host=localhost
+emosense.db.port=3306
+emosense.db.name=emosense_db
+emosense.db.user=root
+emosense.db.password=
+emosense.db.url=jdbc:mysql://localhost:3306/emosense_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC

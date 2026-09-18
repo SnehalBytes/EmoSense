@@ -1,0 +1,16 @@
+target/
+*.class
+*.jar
+database.properties
+*.log
+
+# Large Machine Learning Models & Weights
+*.onnx
+*.pb
+*.tflite
+*.pt
+*.pth
+*.bin
+*.h5
+*.weights
+!models/**/.gitkeep
