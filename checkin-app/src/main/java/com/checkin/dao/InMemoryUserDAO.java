@@ -8,22 +8,24 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Thread-safe in-memory user repository for prototype testing.
- * Pre-seeded with a default demo user: test@emosense.com / password123.
+ * Thread-safe in-memory user repository for prototype testing and offline fallback.
+ * Starts completely empty with zero hardcoded/pre-seeded demo credentials.
  */
 public class InMemoryUserDAO implements UserDAO {
 
     private final Map<String, User> usersByEmail = new ConcurrentHashMap<>();
 
     public InMemoryUserDAO() {
-        // Seed default demo user with cryptographically hashed password
-        User demoUser = new User(
-                UUID.randomUUID().toString(),
-                "Alex Rivera",
-                "test@emosense.com",
-                com.checkin.utils.PasswordHasher.hash("password123")
-        );
-        usersByEmail.put(demoUser.getEmail(), demoUser);
+        // Starts completely empty; no pre-seeded demo credentials in production
+    }
+
+    /**
+     * Helper for test suites to pre-seed users deterministically if needed.
+     */
+    public void seedUser(User user) {
+        if (user != null && user.getEmail() != null) {
+            usersByEmail.put(user.getEmail().trim().toLowerCase(), user);
+        }
     }
 
     @Override

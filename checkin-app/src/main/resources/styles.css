@@ -555,3 +555,55 @@
     -fx-background-radius: 4 4 0 0;
 }
 
+/* Supporting Screens & Navigation Utility Classes */
+.back-button {
+    -fx-background-color: #1e2438;
+    -fx-text-fill: #c7d2fe;
+    -fx-background-radius: 8;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 7 14 7 14;
+    -fx-border-color: #2e3752;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.back-button:hover {
+    -fx-background-color: #2a3350;
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #635bff;
+}
+
+.badge-online {
+    -fx-background-color: rgba(16, 185, 129, 0.15);
+    -fx-text-fill: #34d399;
+    -fx-border-color: rgba(16, 185, 129, 0.4);
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-border-width: 1;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 9 3 9;
+}
+
+.badge-offline {
+    -fx-background-color: rgba(100, 116, 139, 0.2);
+    -fx-text-fill: #94a3b8;
+    -fx-border-color: rgba(100, 116, 139, 0.4);
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-border-width: 1;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 9 3 9;
+}
+
+.avatar-circle {
+    -fx-fill: #2a2f4c;
+    -fx-stroke: #635bff;
+    -fx-stroke-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(99, 91, 255, 0.25), 10, 0, 0, 2);
+}
+
+

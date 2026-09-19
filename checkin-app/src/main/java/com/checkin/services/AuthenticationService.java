@@ -5,6 +5,7 @@ import com.checkin.dao.UserDAO;
 import com.checkin.model.User;
 import com.checkin.dao.JdbcUserDAO;
 import com.checkin.database.DatabaseConnection;
+import com.checkin.database.DatabaseInitializer;
 import com.checkin.utils.PasswordHasher;
 import com.checkin.utils.Validators;
 
@@ -32,11 +33,16 @@ public class AuthenticationService {
         try {
             DatabaseConnection db = DatabaseConnection.getInstance();
             if (db.testConnection()) {
+                DatabaseInitializer.initialize(db);
                 return new JdbcUserDAO(db);
             }
         } catch (Exception ignored) {}
         System.err.println("[AuthenticationService] Local MySQL not currently accessible; operating with prototype in-memory store.");
         return new InMemoryUserDAO();
+    }
+
+    public boolean isPersistentStorageAvailable() {
+        return userDAO instanceof JdbcUserDAO;
     }
 
     public record AuthResult(boolean success, String message, User user) {}
@@ -58,7 +64,7 @@ public class AuthenticationService {
         try {
             Optional<User> userOpt = userDAO.findByEmail(email);
             if (userOpt.isEmpty()) {
-                return new AuthResult(false, "No account found with this email.", null);
+                return new AuthResult(false, "Account not found. Please check your email or create an account.", null);
             }
 
             User user = userOpt.get();
@@ -71,7 +77,7 @@ public class AuthenticationService {
             return new AuthResult(true, "Signed in successfully.", user);
         } catch (Exception e) {
             System.err.println("[AuthenticationService] Sign in error: " + e.getMessage());
-            return new AuthResult(false, "Database connection error. Please try again later.", null);
+            return new AuthResult(false, "Account storage is currently unavailable. Please check the database connection and try again.", null);
         }
     }
 
@@ -110,13 +116,17 @@ public class AuthenticationService {
             User newUser = new User(UUID.randomUUID().toString(), fullName.trim(), email.trim(), passwordHash);
             boolean saved = userDAO.save(newUser);
             if (!saved) {
-                return new AuthResult(false, "Unable to save account to database. Please try again.", null);
+                return new AuthResult(false, "Account storage is currently unavailable. Please check the database connection and try again.", null);
             }
 
-            return new AuthResult(true, "Account created successfully! You can now sign in.", newUser);
+            if (isPersistentStorageAvailable()) {
+                return new AuthResult(true, "Account created successfully! You can now sign in.", newUser);
+            } else {
+                return new AuthResult(true, "Temporary in-memory account created (offline prototype mode). Persistent storage is unavailable and account will not persist across restarts.", newUser);
+            }
         } catch (Exception e) {
             System.err.println("[AuthenticationService] Registration error: " + e.getMessage());
-            return new AuthResult(false, "Database error during registration. Please check server connection.", null);
+            return new AuthResult(false, "Account storage is currently unavailable. Please check the database connection and try again.", null);
         }
     }
 

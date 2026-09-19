@@ -31,8 +31,11 @@ public class Navigation {
     }
 
     public void setScene(Parent root) {
-        double width = stage.getWidth() > 0 ? stage.getWidth() : 1180;
-        double height = stage.getHeight() > 0 ? stage.getHeight() : 780;
+        if (stage == null) {
+            return;
+        }
+        double width = stage.getWidth() > 0 ? stage.getWidth() : 1280;
+        double height = stage.getHeight() > 0 ? stage.getHeight() : 800;
         Scene scene = new Scene(root, width, height);
         var cssUrl = getClass().getResource("/styles.css");
         if (cssUrl != null) {
@@ -115,6 +118,38 @@ public class Navigation {
         box.getStyleClass().add("screen-root");
 
         setScene(box);
+    }
+
+    public void showProfile() {
+        showProfile(this::showDashboard);
+    }
+
+    public void showProfile(Runnable onBack) {
+        setScene(new ProfileScreen(this, onBack != null ? onBack : this::showDashboard));
+    }
+
+    public void showSettings() {
+        showSettings(this::showDashboard);
+    }
+
+    public void showSettings(Runnable onBack) {
+        setScene(new SettingsScreen(this, onBack != null ? onBack : this::showDashboard));
+    }
+
+    public void showPrivacy() {
+        showPrivacy(this::showDashboard);
+    }
+
+    public void showPrivacy(Runnable onBack) {
+        setScene(new PrivacyScreen(this, onBack != null ? onBack : this::showDashboard));
+    }
+
+    public void showTechnology() {
+        showTechnology(this::showDashboard);
+    }
+
+    public void showTechnology(Runnable onBack) {
+        setScene(new TechnologyScreen(this, onBack != null ? onBack : this::showDashboard));
     }
 
     public void signOut() {

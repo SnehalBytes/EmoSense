@@ -19,9 +19,9 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
         stage.setTitle("EmoSense");
-        stage.setWidth(1180);
-        stage.setHeight(780);
-        stage.setMinWidth(900);
+        stage.setWidth(1280);
+        stage.setHeight(800);
+        stage.setMinWidth(1000);
         stage.setMinHeight(650);
 
         AuthenticationService authService = new AuthenticationService();

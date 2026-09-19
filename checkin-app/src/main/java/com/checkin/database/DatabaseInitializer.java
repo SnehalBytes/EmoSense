@@ -1,0 +1,88 @@
+package com.checkin.database;
+
+import java.sql.Connection;
+import java.sql.Statement;
+
+/**
+ * Automates table creation for EmoSense when MySQL is available.
+ * Ensures users, check_ins, and analysis_results tables exist without requiring manual schema execution.
+ */
+public class DatabaseInitializer {
+
+    private static final String CREATE_USERS_TABLE = """
+            CREATE TABLE IF NOT EXISTS users (
+                id VARCHAR(64) PRIMARY KEY,
+                full_name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password_hash VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_users_email (email)
+            ) ENGINE=InnoDB;
+            """;
+
+    private static final String CREATE_CHECK_INS_TABLE = """
+            CREATE TABLE IF NOT EXISTS check_ins (
+                id VARCHAR(64) PRIMARY KEY,
+                user_id VARCHAR(64) NOT NULL,
+                has_photo BOOLEAN NOT NULL DEFAULT FALSE,
+                has_text BOOLEAN NOT NULL DEFAULT FALSE,
+                photo_file_name VARCHAR(255),
+                thoughts_text TEXT,
+                analysis_mode VARCHAR(20) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                INDEX idx_check_ins_user_created (user_id, created_at DESC)
+            ) ENGINE=InnoDB;
+            """;
+
+    private static final String CREATE_ANALYSIS_RESULTS_TABLE = """
+            CREATE TABLE IF NOT EXISTS analysis_results (
+                id VARCHAR(64) PRIMARY KEY,
+                check_in_id VARCHAR(64) NOT NULL,
+                primary_signal VARCHAR(100),
+                confidence DOUBLE,
+                photo_signal VARCHAR(100),
+                text_signal VARCHAR(100),
+                combined_signal VARCHAR(100),
+                signal_agreement VARCHAR(100),
+                model_source VARCHAR(50) DEFAULT 'REAL',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (check_in_id) REFERENCES check_ins(id) ON DELETE CASCADE,
+                INDEX idx_analysis_results_check_in (check_in_id)
+            ) ENGINE=InnoDB;
+            """;
+
+    public static boolean createDatabaseIfNotExists(DatabaseConfig config) {
+        if (config == null) return false;
+        try (Connection serverConn = java.sql.DriverManager.getConnection(
+                config.getServerUrl(), config.getUser(), config.getPassword());
+             Statement stmt = serverConn.createStatement()) {
+            String sql = "CREATE DATABASE IF NOT EXISTS " + config.getDatabaseName()
+                    + " CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
+            stmt.execute(sql);
+            return true;
+        } catch (Exception e) {
+            // If server-level connection is restricted or database already created, ignore safely
+            return false;
+        }
+    }
+
+    public static boolean initialize(DatabaseConnection db) {
+        if (db == null) return false;
+
+        // 1. Attempt database creation if server is reachable
+        createDatabaseIfNotExists(db.getConfig());
+
+        // 2. Create tables idempotently
+        try (Connection conn = db.getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute(CREATE_USERS_TABLE);
+            stmt.execute(CREATE_CHECK_INS_TABLE);
+            stmt.execute(CREATE_ANALYSIS_RESULTS_TABLE);
+            return true;
+        } catch (Exception e) {
+            System.err.println("[DatabaseInitializer] Note: Could not auto-initialize tables: " + e.getMessage());
+            return false;
+        }
+    }
+}

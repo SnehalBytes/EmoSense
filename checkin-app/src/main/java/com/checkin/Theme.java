@@ -50,6 +50,14 @@ public final class Theme {
     public static final String COLOR_SUCCESS = "#10b981";
     public static final String COLOR_ERROR = "#f87171";
 
+    // Standardized typography snippets
+    public static final String FONT_FAMILY = "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif";
+    public static final String STYLE_PAGE_TITLE = "-fx-font-family: " + FONT_FAMILY + "; -fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: " + COLOR_TEXT_PRIMARY + ";";
+    public static final String STYLE_PAGE_SUBTITLE = "-fx-font-family: " + FONT_FAMILY + "; -fx-font-size: 14px; -fx-text-fill: " + COLOR_TEXT_SECONDARY + ";";
+    public static final String STYLE_SECTION_TITLE = "-fx-font-family: " + FONT_FAMILY + "; -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: " + COLOR_TEXT_PRIMARY + ";";
+    public static final String STYLE_BODY = "-fx-font-family: " + FONT_FAMILY + "; -fx-font-size: 13.5px; -fx-text-fill: " + COLOR_TEXT_PRIMARY + ";";
+    public static final String STYLE_MUTED = "-fx-font-family: " + FONT_FAMILY + "; -fx-font-size: 12px; -fx-text-fill: " + COLOR_TEXT_MUTED + ";";
+
     // Style snippet helpers
     public static void applyCardStyle(Region region) {
         region.setStyle(
@@ -60,6 +68,19 @@ public final class Theme {
                 "-fx-border-width: 1;" +
                 "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.35), 16, 0, 0, 4);"
         );
+    }
+
+    public static void applyInteractiveCardStyle(Region region) {
+        applyCardStyle(region);
+        region.setOnMouseEntered(e -> region.setStyle(
+                "-fx-background-color: #1a1f33;" +
+                "-fx-background-radius: 14;" +
+                "-fx-border-radius: 14;" +
+                "-fx-border-color: #3b4668;" +
+                "-fx-border-width: 1;" +
+                "-fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.45), 18, 0, 0, 6);"
+        ));
+        region.setOnMouseExited(e -> applyCardStyle(region));
     }
 
     public static void applyInputField(TextField field) {
@@ -125,6 +146,28 @@ public final class Theme {
         button.setOnMouseEntered(e -> button.setStyle(
                 "-fx-background-color: " + COLOR_SECONDARY_BTN_HOVER + ";" +
                 "-fx-text-fill: " + COLOR_SECONDARY_BTN_TEXT + ";" +
+                "-fx-background-radius: 8;" +
+                "-fx-font-size: 13px;" +
+                "-fx-font-weight: bold;" +
+                "-fx-cursor: hand;" +
+                "-fx-padding: 8 16 8 16;"
+        ));
+        button.setOnMouseExited(e -> button.setStyle(base));
+    }
+
+    public static void applyDangerButton(Button button) {
+        String base =
+                "-fx-background-color: " + COLOR_DANGER_BG + ";" +
+                "-fx-text-fill: " + COLOR_DANGER_TEXT + ";" +
+                "-fx-background-radius: 8;" +
+                "-fx-font-size: 13px;" +
+                "-fx-font-weight: bold;" +
+                "-fx-cursor: hand;" +
+                "-fx-padding: 8 16 8 16;";
+        button.setStyle(base);
+        button.setOnMouseEntered(e -> button.setStyle(
+                "-fx-background-color: #481e2b;" +
+                "-fx-text-fill: #fca5a5;" +
                 "-fx-background-radius: 8;" +
                 "-fx-font-size: 13px;" +
                 "-fx-font-weight: bold;" +

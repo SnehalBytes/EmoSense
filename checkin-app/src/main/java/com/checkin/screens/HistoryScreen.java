@@ -234,7 +234,7 @@ public class HistoryScreen extends BorderPane {
     private VBox buildRecordCard(CheckInRecord record) {
         VBox card = new VBox(14);
         card.setPadding(new Insets(20, 24, 20, 24));
-        Theme.applyCardStyle(card);
+        Theme.applyInteractiveCardStyle(card);
 
         // 1. Top row: Date/Time + Modality Badge + Model Badge + Spacer + View Result Button
         HBox topRow = new HBox(10);

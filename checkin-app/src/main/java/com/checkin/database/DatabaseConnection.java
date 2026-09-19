@@ -46,11 +46,18 @@ public class DatabaseConnection {
 
     /**
      * Validates whether the database is accessible without throwing unhandled exceptions.
+     * If the MySQL server is running but the database does not exist yet, attempts creation.
      */
     public boolean testConnection() {
         try (Connection conn = getConnection()) {
             return conn != null && !conn.isClosed() && conn.isValid(2);
         } catch (Exception e) {
+            // If server is reachable, attempt to create database if it doesn't exist yet
+            if (DatabaseInitializer.createDatabaseIfNotExists(config)) {
+                try (Connection conn2 = getConnection()) {
+                    return conn2 != null && !conn2.isClosed() && conn2.isValid(2);
+                } catch (Exception ignored) {}
+            }
             return false;
         }
     }

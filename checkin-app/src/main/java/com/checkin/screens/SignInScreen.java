@@ -36,7 +36,18 @@ public class SignInScreen extends StackPane {
         VBox card = buildSignInCard();
 
         contentBox.getChildren().addAll(brandingBox, card);
-        getChildren().add(contentBox);
+
+        StackPane centerContainer = new StackPane(contentBox);
+        centerContainer.setAlignment(Pos.CENTER);
+        centerContainer.setPadding(new Insets(20));
+
+        ScrollPane scrollPane = new ScrollPane(centerContainer);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setFitToHeight(true);
+        scrollPane.getStyleClass().add("edge-to-edge");
+        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+
+        getChildren().add(scrollPane);
         setAlignment(Pos.CENTER);
     }
 
@@ -134,14 +145,32 @@ public class SignInScreen extends StackPane {
         createAccountLink.setOnAction(e -> navigation.showSignUp());
         footer.getChildren().addAll(noAccountLabel, createAccountLink);
 
-        // Pre-fill demo credentials for seamless first evaluation
-        emailField.setText("test@emosense.com");
-        passwordField.setText("password123");
+        // Ensure credentials start completely empty
+        emailField.setText("");
+        passwordField.setText("");
 
         card.getChildren().addAll(
                 switchBox,
                 cardTitle,
-                cardSubtitle,
+                cardSubtitle
+        );
+
+        if (navigation != null && navigation.getAuthService() != null && !navigation.getAuthService().isPersistentStorageAvailable()) {
+            Label dbNotice = new Label("⚠ Database Offline: Running in session-only mode. Accounts created will not persist after restart.");
+            dbNotice.setStyle(
+                    "-fx-font-size: 11px;" +
+                    "-fx-text-fill: #fbbf24;" +
+                    "-fx-background-color: rgba(251, 191, 36, 0.12);" +
+                    "-fx-border-color: rgba(251, 191, 36, 0.3);" +
+                    "-fx-border-radius: 4;" +
+                    "-fx-padding: 6 10;" +
+                    "-fx-background-radius: 4;"
+            );
+            dbNotice.setWrapText(true);
+            card.getChildren().add(dbNotice);
+        }
+
+        card.getChildren().addAll(
                 messageLabel,
                 emailBox,
                 passwordBox,
@@ -149,6 +178,14 @@ public class SignInScreen extends StackPane {
                 footer
         );
         return card;
+    }
+
+    public TextField getEmailField() {
+        return emailField;
+    }
+
+    public PasswordField getPasswordField() {
+        return passwordField;
     }
 
     private HBox buildSwitchTabs() {

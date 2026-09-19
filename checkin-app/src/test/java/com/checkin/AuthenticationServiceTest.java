@@ -1,23 +1,31 @@
 package com.checkin;
 
 import com.checkin.dao.InMemoryUserDAO;
+import com.checkin.dao.UserDAO;
+import com.checkin.model.User;
 import com.checkin.services.AuthenticationService;
 import com.checkin.utils.Validators;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class AuthenticationServiceTest {
 
+    private InMemoryUserDAO userDAO;
     private AuthenticationService authService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthenticationService(new InMemoryUserDAO());
+        userDAO = new InMemoryUserDAO();
+        authService = new AuthenticationService(userDAO);
     }
 
     @Test
+    @DisplayName("Email validation checks RFC formatting")
     void testEmailValidation() {
         assertTrue(Validators.isValidEmail("user@example.com"));
         assertTrue(Validators.isValidEmail("name.surname@domain.co.uk"));
@@ -29,16 +37,17 @@ public class AuthenticationServiceTest {
     }
 
     @Test
-    void testDefaultDemoUserCanSignIn() {
+    @DisplayName("No pre-seeded demo user: repository starts empty by default")
+    void testNoPreSeededUserCanSignInByDefault() {
         var result = authService.signIn("test@emosense.com", "password123");
-        assertTrue(result.success());
-        assertNotNull(result.user());
-        assertEquals("Alex Rivera", result.user().getFullName());
-        assertTrue(authService.isAuthenticated());
-        assertEquals(result.user(), authService.getCurrentUser());
+        assertFalse(result.success());
+        assertNull(result.user());
+        assertEquals("Account not found. Please check your email or create an account.", result.message());
+        assertFalse(authService.isAuthenticated());
     }
 
     @Test
+    @DisplayName("Sign in with empty fields prompts clear validation errors")
     void testSignInWithEmptyFields() {
         var res1 = authService.signIn("", "password123");
         assertFalse(res1.success());
@@ -50,20 +59,26 @@ public class AuthenticationServiceTest {
     }
 
     @Test
+    @DisplayName("Sign in with incorrect password produces specific message")
     void testSignInWithWrongPassword() {
+        // Register user first
+        authService.signUp("Test User", "test@emosense.com", "password123", "password123");
+
         var res = authService.signIn("test@emosense.com", "wrongPass");
         assertFalse(res.success());
         assertEquals("Incorrect password. Please try again.", res.message());
     }
 
     @Test
+    @DisplayName("Sign in with nonexistent user produces account not found message")
     void testSignInWithNonexistentUser() {
         var res = authService.signIn("nonexistent@emosense.com", "password123");
         assertFalse(res.success());
-        assertEquals("No account found with this email.", res.message());
+        assertEquals("Account not found. Please check your email or create an account.", res.message());
     }
 
     @Test
+    @DisplayName("Sign up validation prevents invalid names, emails, and passwords")
     void testSignUpValidation() {
         // Missing name
         var r1 = authService.signUp("", "new@example.com", "pass123", "pass123");
@@ -87,10 +102,13 @@ public class AuthenticationServiceTest {
     }
 
     @Test
+    @DisplayName("Successful sign up in offline fallback clearly indicates temporary storage")
     void testSuccessfulSignUpAndSubsequentSignIn() {
+        assertFalse(authService.isPersistentStorageAvailable());
+
         var regResult = authService.signUp("Jane Doe", "jane@example.com", "securePass123", "securePass123");
         assertTrue(regResult.success());
-        assertEquals("Account created successfully! You can now sign in.", regResult.message());
+        assertTrue(regResult.message().contains("Temporary in-memory account created") || regResult.message().contains("will not persist"));
 
         // Duplicate registration should fail
         var dupResult = authService.signUp("Jane Doe Duplicate", "jane@example.com", "securePass123", "securePass123");
@@ -105,12 +123,45 @@ public class AuthenticationServiceTest {
     }
 
     @Test
+    @DisplayName("Sign out clears current user and session")
     void testSignOut() {
-        authService.signIn("test@emosense.com", "password123");
+        authService.signUp("Alex Rivera", "alex@example.com", "password123", "password123");
+        authService.signIn("alex@example.com", "password123");
         assertTrue(authService.isAuthenticated());
 
         authService.signOut();
         assertFalse(authService.isAuthenticated());
         assertNull(authService.getCurrentUser());
+    }
+
+    @Test
+    @DisplayName("Database unavailable throws produce standardized safe error message")
+    void testDatabaseUnavailableError() {
+        UserDAO failingDAO = new UserDAO() {
+            @Override
+            public Optional<User> findByEmail(String email) {
+                throw new RuntimeException("Simulated connection timeout to MySQL");
+            }
+
+            @Override
+            public boolean existsByEmail(String email) {
+                throw new RuntimeException("Simulated connection timeout to MySQL");
+            }
+
+            @Override
+            public boolean save(User user) {
+                throw new RuntimeException("Simulated connection timeout to MySQL");
+            }
+        };
+
+        AuthenticationService failingService = new AuthenticationService(failingDAO);
+
+        var signInRes = failingService.signIn("user@example.com", "password123");
+        assertFalse(signInRes.success());
+        assertEquals("Account storage is currently unavailable. Please check the database connection and try again.", signInRes.message());
+
+        var signUpRes = failingService.signUp("User", "user@example.com", "password123", "password123");
+        assertFalse(signUpRes.success());
+        assertEquals("Account storage is currently unavailable. Please check the database connection and try again.", signUpRes.message());
     }
 }

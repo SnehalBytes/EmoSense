@@ -55,14 +55,14 @@ public class CheckInScreen extends BorderPane {
         VBox titleBox = new VBox(2);
         titleBox.setAlignment(Pos.CENTER_LEFT);
 
-        Label title = new Label("Express Yourself");
+        Label title = new Label("How are you feeling today?");
         title.setStyle(
                 "-fx-font-size: 22px;" +
                 "-fx-font-weight: bold;" +
                 "-fx-text-fill: #f1f3f9;"
         );
 
-        Label subtitle = new Label("Share a photo and tell us what's on your mind. You can use either one or both.");
+        Label subtitle = new Label("Share a photo, your thoughts, or both. EmoSense can analyze photo-only, text-only, or combined multimodal signals.");
         subtitle.setStyle(
                 "-fx-font-size: 13px;" +
                 "-fx-text-fill: " + Theme.COLOR_TEXT_SECONDARY + ";"

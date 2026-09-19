@@ -19,11 +19,15 @@ import javafx.scene.layout.*;
 import javafx.util.Duration;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * AI Companion screen for EmoSense.
  * Provides a calm, supportive, non-clinical chat interface for emotional reflection
- * with a realistic thinking animation state.
+ * with an asynchronous thinking animation state that never blocks the JavaFX Application Thread.
  */
 public class CompanionScreen extends BorderPane {
 
@@ -33,6 +37,7 @@ public class CompanionScreen extends BorderPane {
     private final ScrollPane scrollPane = new ScrollPane();
     private final TextField inputField = new TextField();
     private final Button sendButton = new Button("Send");
+    private final Label modeBadge = new Label();
 
     // Asynchronous thinking state tracking
     private boolean isResponding = false;
@@ -40,6 +45,10 @@ public class CompanionScreen extends BorderPane {
     private PauseTransition activePause = null;
     private Timeline thinkingTimeline = null;
     private Node currentThinkingBubble = null;
+
+    private CompletableFuture<String> pendingFuture = null;
+    private final AtomicBoolean pauseCompleted = new AtomicBoolean(false);
+    private final AtomicReference<String> pendingReplyText = new AtomicReference<>(null);
 
     public CompanionScreen(Navigation navigation) {
         this(navigation, new AICompanionService(), null);
@@ -108,6 +117,9 @@ public class CompanionScreen extends BorderPane {
         HBox actions = new HBox(10);
         actions.setAlignment(Pos.CENTER_RIGHT);
 
+        updateModeBadge();
+        actions.getChildren().add(modeBadge);
+
         if (companionService.hasCheckInContext()) {
             Label contextBadge = new Label("Check-In Context Active");
             contextBadge.setStyle(
@@ -138,6 +150,34 @@ public class CompanionScreen extends BorderPane {
 
         header.getChildren().addAll(backBtn, titleBox, spacer, actions);
         return header;
+    }
+
+    private void updateModeBadge() {
+        if (companionService.isOnlineEngineConfigured() && !companionService.isLastResponseUsedFallback()) {
+            modeBadge.setText("Online Mode");
+            modeBadge.setStyle(
+                    "-fx-background-color: rgba(16, 185, 129, 0.12);" +
+                    "-fx-text-fill: #34d399;" +
+                    "-fx-border-color: rgba(16, 185, 129, 0.3);" +
+                    "-fx-border-radius: 6;" +
+                    "-fx-background-radius: 6;" +
+                    "-fx-padding: 5 10;" +
+                    "-fx-font-size: 11px;" +
+                    "-fx-font-weight: bold;"
+            );
+        } else {
+            modeBadge.setText("Offline Mode");
+            modeBadge.setStyle(
+                    "-fx-background-color: rgba(148, 163, 184, 0.12);" +
+                    "-fx-text-fill: #94a3b8;" +
+                    "-fx-border-color: rgba(148, 163, 184, 0.28);" +
+                    "-fx-border-radius: 6;" +
+                    "-fx-background-radius: 6;" +
+                    "-fx-padding: 5 10;" +
+                    "-fx-font-size: 11px;" +
+                    "-fx-font-weight: bold;"
+            );
+        }
     }
 
     private Node buildChatArea() {
@@ -217,7 +257,8 @@ public class CompanionScreen extends BorderPane {
      * 1. Displays user message immediately in chat
      * 2. Temporarily disables Send button and input to prevent duplicate submissions
      * 3. Displays an animated "Thinking..." companion bubble
-     * 4. Asynchronously generates the real companion response after ~1.5s non-blocking delay
+     * 4. Asynchronously generates the companion response on a background thread without blocking JavaFX
+     * 5. Displays the response after both the response is computed and the minimum thinking animation delay passes
      */
     public void handleSendMessage() {
         String text = inputField.getText();
@@ -244,15 +285,41 @@ public class CompanionScreen extends BorderPane {
         messagesContainer.getChildren().add(currentThinkingBubble);
         scrollToBottom();
 
-        // STEP 4: Wait approximately 1.5 seconds without blocking the JavaFX Application Thread
+        pauseCompleted.set(false);
+        pendingReplyText.set(null);
+
+        // STEP 3: Asynchronously compute response on a background thread
+        // Never blocks the JavaFX Application Thread and does not mutate conversation history until response is displayed
+        pendingFuture = CompletableFuture.supplyAsync(() -> {
+            try {
+                return companionService.computeCompanionReplyText();
+            } catch (Exception ex) {
+                return "I hear you. Take a moment for yourself, and feel free to share whatever is on your mind whenever you are ready.";
+            }
+        });
+
+        // When the background future completes, finish response if minimum delay has passed
+        pendingFuture.thenAccept(replyText -> {
+            pendingReplyText.set(replyText);
+            if (pauseCompleted.get()) {
+                Platform.runLater(this::finishCompanionResponse);
+            }
+        });
+
+        // STEP 4: Ensure thinking animation is visible for at least the specified delay
         activePause = new PauseTransition(thinkingDelay);
-        activePause.setOnFinished(e -> finishCompanionResponse());
+        activePause.setOnFinished(e -> {
+            pauseCompleted.set(true);
+            if (pendingReplyText.get() != null || (pendingFuture != null && pendingFuture.isDone())) {
+                finishCompanionResponse();
+            }
+        });
         activePause.play();
     }
 
     /**
      * Completes the companion response after the thinking period:
-     * Removes the thinking bubble, appends the real companion message, and re-enables input.
+     * Removes the thinking bubble, appends the real companion message, updates status, and re-enables input.
      */
     public void finishCompanionResponse() {
         if (!isResponding) {
@@ -275,19 +342,40 @@ public class CompanionScreen extends BorderPane {
             currentThinkingBubble = null;
         }
 
-        // STEP 5: Generate the response using AICompanionService
-        ChatMessage reply = null;
-        try {
-            reply = companionService.generateCompanionResponse();
-        } catch (Exception ex) {
-            reply = null;
+        String replyText = pendingReplyText.get();
+        if (replyText == null && pendingFuture != null && pendingFuture.isDone()) {
+            try {
+                replyText = pendingFuture.getNow(null);
+            } catch (Exception ignored) {
+            }
         }
 
-        if (reply == null) {
-            reply = ChatMessage.companion("I wasn't able to respond just now. Please try again.");
+        // If finishCompanionResponse was invoked synchronously (e.g. from a test), wait briefly or compute
+        if (replyText == null) {
+            if (pendingFuture != null) {
+                try {
+                    replyText = pendingFuture.get(200, TimeUnit.MILLISECONDS);
+                } catch (Exception ignored) {
+                }
+            }
+            if (replyText == null) {
+                try {
+                    replyText = companionService.computeCompanionReplyText();
+                } catch (Exception ex) {
+                    replyText = null;
+                }
+            }
         }
 
-        // STEP 7: Display the actual companion response
+        if (replyText == null || replyText.isBlank()) {
+            replyText = "I wasn't able to respond just now. Please try again.";
+        }
+
+        // Update mode badge
+        updateModeBadge();
+
+        // STEP 7: Add to conversation history and display the actual companion response
+        ChatMessage reply = companionService.addCompanionMessage(replyText);
         messagesContainer.getChildren().add(buildMessageBubble(reply));
 
         // STEP 8: Re-enable Send and input
@@ -303,6 +391,10 @@ public class CompanionScreen extends BorderPane {
      * Safely cancels any active thinking delay and animation without causing JavaFX exceptions.
      */
     public void cancelPendingResponse() {
+        if (pendingFuture != null) {
+            pendingFuture.cancel(true);
+            pendingFuture = null;
+        }
         if (activePause != null) {
             activePause.stop();
             activePause = null;
@@ -323,6 +415,7 @@ public class CompanionScreen extends BorderPane {
     public void handleClearConversation() {
         cancelPendingResponse();
         companionService.clearConversation();
+        updateModeBadge();
         renderConversation();
     }
 

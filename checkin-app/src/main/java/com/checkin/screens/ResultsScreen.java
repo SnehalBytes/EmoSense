@@ -39,7 +39,7 @@ public class ResultsScreen extends VBox {
                 result,
                 navigation != null ? navigation::showCheckIn : null,
                 navigation != null ? navigation::showHistory : null,
-                navigation != null ? () -> navigation.showPlaceholder("AI Companion", "Your AI Companion is coming soon.\nThis is where supportive conversations will continue.") : null,
+                navigation != null ? () -> navigation.showCompanion(result) : null,
                 navigation != null ? navigation::showDashboard : null
         );
     }

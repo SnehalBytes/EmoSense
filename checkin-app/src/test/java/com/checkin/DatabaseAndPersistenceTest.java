@@ -179,7 +179,7 @@ public class DatabaseAndPersistenceTest {
         assertTrue(schemaFile.exists(), "schema.sql should exist in database/ folder");
         String content = Files.readString(schemaFile.toPath());
 
-        assertTrue(content.contains("CREATE DATABASE IF NOT EXISTS emosense_db"));
+        assertTrue(content.contains("CREATE DATABASE IF NOT EXISTS emosense"));
         assertTrue(content.contains("CREATE TABLE IF NOT EXISTS users"));
         assertTrue(content.contains("CREATE TABLE IF NOT EXISTS check_ins"));
         assertTrue(content.contains("CREATE TABLE IF NOT EXISTS analysis_results"));

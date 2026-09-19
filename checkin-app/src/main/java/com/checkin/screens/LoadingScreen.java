@@ -1,5 +1,6 @@
 package com.checkin.screens;
 
+import com.checkin.Theme;
 import com.checkin.model.AnalysisEngine;
 import com.checkin.model.AnalysisResult;
 import com.checkin.model.CheckInData;
@@ -33,15 +34,27 @@ public class LoadingScreen extends VBox {
         setAlignment(Pos.CENTER);
         setPadding(new Insets(40));
 
+        VBox card = new VBox(20);
+        card.setAlignment(Pos.CENTER);
+        card.setPadding(new Insets(36, 44, 36, 44));
+        card.setMaxWidth(480);
+        Theme.applyCardStyle(card);
+
         Label title = new Label("Analyzing Your Check-In");
         title.getStyleClass().add("screen-title");
+        title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #f1f3f9;");
 
-        spinner.setMaxSize(64, 64);
-        progressBar.setPrefWidth(360);
+        Label subtitle = new Label("Please wait while EmoSense evaluates your emotional signals.");
+        subtitle.setStyle("-fx-font-size: 13px; -fx-text-fill: " + Theme.COLOR_TEXT_SECONDARY + ";");
+
+        spinner.setMaxSize(56, 56);
+        progressBar.setPrefWidth(380);
 
         stepsBox.setAlignment(Pos.CENTER_LEFT);
+        stepsBox.setMaxWidth(380);
 
-        getChildren().addAll(title, spinner, progressBar, stepsBox);
+        card.getChildren().addAll(spinner, title, subtitle, progressBar, stepsBox);
+        getChildren().add(card);
 
         runPipeline(data, onComplete);
     }

@@ -92,13 +92,37 @@ public class DashboardScreen extends BorderPane {
                 "-fx-text-fill: " + Theme.COLOR_TEXT_PRIMARY + ";"
         );
 
+        Button profileBtn = new Button("Profile");
+        Theme.applySecondaryButton(profileBtn);
+        profileBtn.setOnAction(e -> {
+            if (navigation != null) navigation.showProfile();
+        });
+
+        Button settingsBtn = new Button("Settings");
+        Theme.applySecondaryButton(settingsBtn);
+        settingsBtn.setOnAction(e -> {
+            if (navigation != null) navigation.showSettings();
+        });
+
+        Button privacyBtn = new Button("Privacy");
+        Theme.applySecondaryButton(privacyBtn);
+        privacyBtn.setOnAction(e -> {
+            if (navigation != null) navigation.showPrivacy();
+        });
+
+        Button aboutBtn = new Button("About");
+        Theme.applySecondaryButton(aboutBtn);
+        aboutBtn.setOnAction(e -> {
+            if (navigation != null) navigation.showTechnology();
+        });
+
         Button signOutBtn = new Button("Sign Out");
         Theme.applySecondaryButton(signOutBtn);
         signOutBtn.setOnAction(e -> {
             if (navigation != null) navigation.signOut();
         });
 
-        navbar.getChildren().addAll(logo, spacer, userGreeting, signOutBtn);
+        navbar.getChildren().addAll(logo, spacer, userGreeting, profileBtn, settingsBtn, privacyBtn, aboutBtn, signOutBtn);
         return navbar;
     }
 
@@ -435,7 +459,7 @@ public class DashboardScreen extends BorderPane {
         VBox card = new VBox(8);
         card.setPadding(new Insets(18));
         card.setAlignment(Pos.TOP_LEFT);
-        Theme.applyCardStyle(card);
+        Theme.applyInteractiveCardStyle(card);
 
         Label header = new Label(headerText);
         header.setStyle("-fx-font-size: 13px; -fx-font-weight: 800; -fx-text-fill: #818cf8; -fx-letter-spacing: 0.5px;");
