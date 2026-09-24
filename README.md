@@ -151,3 +151,7 @@ Used to detect and locate the face in an uploaded image before facial emotion an
              │
              ▼
        History & Insights
+
+🧩 System Architecture
+
+  
