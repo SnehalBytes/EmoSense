@@ -336,7 +336,3 @@ EmoSense/
 > *Understanding the emotions we don't always express.*
 
 ---
-
-## 🎥 Demo Video
-
-[![EmoSense Demo](images/demo-thumbnail.png)](images/emosense-demo.mp4)
