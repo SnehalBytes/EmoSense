@@ -291,26 +291,6 @@ The application initializes the required database structure when a MySQL connect
 - Git
 - Maven Wrapper
 
-### Run the Application
-
-From the `checkin-app` directory:
-
-```powershell
-.\mvnw.cmd javafx:run
-```
-
-### Database Configuration
-
-Default MySQL configuration:
-
-```text
-Host: localhost
-Port: 3306
-Database: emosense
-```
-
-Database credentials should be configured through environment variables or a local configuration file and should **never be committed to GitHub**.
-
 ---
 
 ## 📁 Project Structure
@@ -345,15 +325,6 @@ EmoSense/
     ├── text/
     └── face_detection/
 ```
-
----
-
-## ⚠️ Disclaimer
-
-EmoSense is developed as an **academic project and prototype**.
-
-It is intended for emotional awareness and self-reflection and should not be used as a substitute for professional medical, psychological, or mental-health assessment.
-
 ---
 
 ## 👩‍💻 Project
