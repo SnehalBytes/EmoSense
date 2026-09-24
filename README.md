@@ -151,7 +151,6 @@ Used to detect and locate the face in an uploaded image before facial emotion an
              │
              ▼
        History & Insights
-
 ## 🧩 System Architecture
 
 ```text
@@ -175,9 +174,200 @@ Used to detect and locate the face in an uploaded image before facial emotion an
                      │
                      ▼
                 MySQL Database
+```
 
+---
 
+## 🛠️ Technology Stack
 
-               
+| Technology | Purpose |
+|------------|---------|
+| **Java 17** | Core application development |
+| **JavaFX** | Desktop user interface |
+| **ONNX Runtime** | AI model inference |
+| **MySQL** | Persistent data storage |
+| **JDBC** | Database connectivity |
+| **Maven** | Build and dependency management |
+| **Gemini API** | AI Companion responses |
+| **Git & GitHub** | Version control |
 
-  
+---
+
+## 📚 Datasets
+
+EmoSense uses publicly available emotion-related datasets associated with the underlying models:
+
+- **FER2013** – Facial Expression Recognition
+- **GoEmotions** – Textual Emotion Recognition
+
+The deployed emotion models are **pre-trained/fine-tuned models**. EmoSense integrates these models for inference rather than training the models from scratch.
+
+---
+
+## 🧠 How the AI Analysis Works
+
+### Facial Analysis
+
+```text
+Uploaded Image
+      ↓
+Face Detection
+      ↓
+Image Preprocessing
+      ↓
+Facial Emotion Model
+      ↓
+Emotion Probabilities
+      ↓
+Facial Emotional Signal
+```
+
+### Text Analysis
+
+```text
+User Text
+    ↓
+Tokenization
+    ↓
+Text Emotion Model
+    ↓
+Emotion Probabilities
+    ↓
+Textual Emotional Signal
+```
+
+### Multimodal Analysis
+
+```text
+Facial Emotional Signal
+          +
+Textual Emotional Signal
+          ↓
+   Signal Comparison
+          ↓
+ Multimodal Insight
+```
+
+The system uses model confidence values and does not treat emotion predictions as absolute facts.
+
+---
+
+## 🔒 Privacy & Responsible AI
+
+EmoSense is an **academic prototype** designed for emotional awareness and self-reflection.
+
+- Facial images are used for facial emotion analysis.
+- Emotion predictions are probabilistic and may be inaccurate.
+- The system does not provide medical or psychological diagnoses.
+- The AI Companion provides supportive, non-clinical responses.
+- API credentials are not hard-coded into the application.
+- The facial image is not sent to the Gemini API for AI Companion responses.
+- The system considers privacy, uncertainty, and responsible AI usage.
+
+---
+
+## 🗄️ Database
+
+EmoSense uses **MySQL** for persistent application data.
+
+The database stores application information such as:
+
+- User accounts
+- Check-ins
+- Analysis results
+- Emotional signals
+- Timestamps
+
+The application initializes the required database structure when a MySQL connection is available.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Java 17
+- MySQL Server
+- Git
+- Maven Wrapper
+
+### Run the Application
+
+From the `checkin-app` directory:
+
+```powershell
+.\mvnw.cmd javafx:run
+```
+
+### Database Configuration
+
+Default MySQL configuration:
+
+```text
+Host: localhost
+Port: 3306
+Database: emosense
+```
+
+Database credentials should be configured through environment variables or a local configuration file and should **never be committed to GitHub**.
+
+---
+
+## 📁 Project Structure
+
+```text
+EmoSense/
+│
+├── README.md
+├── .gitignore
+│
+├── images/
+│   ├── signin.png
+│   ├── dashboard.png
+│   ├── checkin.png
+│   ├── results.png
+│   ├── companion.png
+│   └── demo-thumbnail.png
+│
+├── checkin-app/
+│   ├── src/
+│   │   └── main/
+│   │       └── java/
+│   │           └── com/
+│   │               └── emosense/
+│   ├── database/
+│   ├── data/
+│   ├── pom.xml
+│   └── mvnw.cmd
+│
+└── models/
+    ├── facial/
+    ├── text/
+    └── face_detection/
+```
+
+---
+
+## ⚠️ Disclaimer
+
+EmoSense is developed as an **academic project and prototype**.
+
+It is intended for emotional awareness and self-reflection and should not be used as a substitute for professional medical, psychological, or mental-health assessment.
+
+---
+
+## 👩‍💻 Project
+
+### EmoSense
+
+**AI-Driven Multimodal Emotional Signal Analysis System**
+
+> *Understanding the emotions we don't always express.*
+
+---
+
+## 🎥 Demo Video
+
+[![EmoSense Demo](images/demo-thumbnail.png)](YOUR_DEMO_VIDEO_LINK)
+
+> Click the thumbnail above to watch the EmoSense demonstration.
