@@ -339,6 +339,4 @@ EmoSense/
 
 ## 🎥 Demo Video
 
-[![EmoSense Demo](images/demo-thumbnail.png)](YOUR_DEMO_VIDEO_LINK)
-
-> Click the thumbnail above to watch the EmoSense demonstration.
+[![EmoSense Demo](images/demo-thumbnail.png)](images/emosense-demo.mp4)
