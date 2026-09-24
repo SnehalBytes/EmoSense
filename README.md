@@ -152,6 +152,32 @@ Used to detect and locate the face in an uploaded image before facial emotion an
              ▼
        History & Insights
 
-🧩 System Architecture
+## 🧩 System Architecture
+
+```text
+                    JavaFX User Interface
+                             │
+                             ▼
+                    Application Services
+                             │
+             ┌───────────────┼───────────────┐
+             │               │               │
+             ▼               ▼               ▼
+       Facial Analysis  Text Analysis   AI Companion
+             │               │               │
+             ▼               ▼               ▼
+          ONNX Model      ONNX Model     Gemini API /
+                                            Local Fallback
+             │               │
+             └───────┬───────┘
+                     ▼
+              Multimodal Analysis
+                     │
+                     ▼
+                MySQL Database
+
+
+
+               
 
   
